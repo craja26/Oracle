@@ -31,17 +31,18 @@ SHOW CON_NAME;
 
 EXIT;
 ```
+```bash
 # if you want to conenct directly using hr user
 sqlplus hr/Oracle_123@ORCLPDB1
 
-or
+# or
 sqlplus hr/Oracle_123@ORCLPDB1 as sysdba   -- (sysdba avasaram ledu HR ki)
 
--- Common ways to conenct
+##-- Common ways to conenct
 # 1. Easy Connect
 sqlplus hr/Oracle_123@oracle19c-lab:1521/orclpdb1
 
 # 2. Using tnsnames
 sqlplus hr/Oracle_123@ORCLPDB1
-
+```
 
