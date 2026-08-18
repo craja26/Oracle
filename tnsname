@@ -1,0 +1,34 @@
+# remote connections easy ga avvaali ante tnsnames.ora configure cheyyaali.
+# verify the file
+cd $ORACLE_HOME/network/admin
+ls -l tnsnames.ora
+
+# create file if it is not available.
+
+cat > $ORACLE_HOME/network/admin/tnsnames.ora << EOF
+ORCLCDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = oracle19c-lab)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = ORCLCDB)
+    )
+  )
+
+ORCLPDB1 =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = oracle19c-lab)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = orclpdb1)
+    )
+  )
+EOF
+
+
+# test 
+tnsping ORCLCDB
+tnsping ORCLPDB1
+
+# connection test
+sqlplus system/Oracle_123@ORCLPDB1
