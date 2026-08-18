@@ -1,3 +1,4 @@
+```bash
 # 1. Quick health check
 su - oracle
 ps -ef | grep pmon
@@ -19,6 +20,7 @@ lsnrctl start
 
 # Database start
 sqlplus / as sysdba
+```
 
 STARTUP;
 ALTER PLUGGABLE DATABASE ALL OPEN;
@@ -45,6 +47,16 @@ SHOW PDBS;
 
 # Alert log
 tail -100 /u01/app/oracle/diag/rdbms/orclcdb/ORCLCDB/trace/alert_ORCLCDB.log
+
+
+### check the current PDB name
+SHOW CON_NAME;
+
+SELECT sys_context('USERENV','CON_NAME') FROM dual;
+
+SELECT name, open_mode FROM v$pdbs;
+
+
 
 
 
