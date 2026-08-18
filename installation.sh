@@ -147,6 +147,30 @@ EXIT;
 
 
 
+########### Auto start ###########
+# update oratab file last line value from N to Y
+vim /etc/oratab
+# change below line value to Y
+ORCLCDB:/u01/app/oracle/product/19c/dbhome_1:Y
+
+# rc.local file create
+chmod +x /etc/rc.d/rc.local
+
+cat >> /etc/rc.d/rc.local << EOF
+
+# Oracle Start
+su - oracle -c "lsnrctl start"
+su - oracle -c "sqlplus / as sysdba << EOF
+STARTUP;
+ALTER PLUGGABLE DATABASE ALL OPEN;
+ALTER PLUGGABLE DATABASE ALL SAVE STATE;
+EXIT;
+EOF"
+EOF
+
+# systemctl enable 
+systemctl enable rc-local
+
 
 
 
