@@ -57,7 +57,63 @@ SHOW PARAMETER db_recovery_file_dest;
 SHOW PARAMETER db_recovery_file_dest_size;
 ```
 
+#### Qucik Test
+Take a new backup after location change
+```bash
+rman target /
+BACKUP DATABASE;
+LIST BACKUP;
+```
+**Notes** RMAN remote connect
+```bash
+rman target sys/Oracle_123@192.168.2.130:1521/ORCLCDB
+# or
+rman target sys/Oracle_123@ORCLCDB
 
+# Full format
+rman target sys/password@//IP:1521/SERVICE_NAME
+```
+
+### RMAN Incremental Backup (Level 0 + Level 1)
+| Type | Usage | Use Case |
+|---|---|---|
+| Level 0 | Full backup (base backup) | Weekly / Starting point |
+| Level 1 | Level 0 taruvata change ayina blocks only | Daily backups |
+
+#### Two types of Level 1:
+- `Differential` (default) -> Last level 0 or Level 1 nunchi changes
+- `Cumulative` -> Last Level 0 nunchi anni changes
+
+##### Adavantages:
+- Backup size + time tagguthundhi
+- Network + storage save avuthindhi
+
+##### Common Strategy (In companies):
+- Sunday -> Level 0
+- Mon-Sat -> Level 1
+
+### Practice
+** A. Level 0 Backup (Base) **
+```bash
+rman target /
+
+BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG DELETE INPUT;
+```
+** B. Level 1 Backup (Incremental) **
+```bash
+BACKUP INCREMENTAL LEVEL 1 DATABASE PLUS ARCHIVELOG DELETE INPUT;
+```
+** Cumulative Level 1 (optional) **
+```bash
+BACKUP INCREMENTAL LEVEL 1 CUMULATIVE DATABASE;
+```
+---
+Useful Commands
+```bash
+LIST BACKUP SUMMARY;
+LIST BACKUP OF DATABASE;
+REPORT NEED BACKUP;
+```
 
 
 
