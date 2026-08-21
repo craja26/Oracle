@@ -93,17 +93,17 @@ rman target sys/password@//IP:1521/SERVICE_NAME
 - Mon-Sat -> Level 1
 
 ### Practice
-** A. Level 0 Backup (Base) **
+**A. Level 0 Backup (Base)**
 ```bash
 rman target /
 
 BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG DELETE INPUT;
 ```
-** B. Level 1 Backup (Incremental) **
+**B. Level 1 Backup (Incremental)**
 ```bash
 BACKUP INCREMENTAL LEVEL 1 DATABASE PLUS ARCHIVELOG DELETE INPUT;
 ```
-** Cumulative Level 1 (optional) **
+**Cumulative Level 1 (optional)**
 ```bash
 BACKUP INCREMENTAL LEVEL 1 CUMULATIVE DATABASE;
 ```
