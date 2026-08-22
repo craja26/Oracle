@@ -95,7 +95,15 @@ COMMIT;
 
 SELECT * FROM test_table;
 ```
-
+### Settings for SQL*Plus better output
+```sql
+-- Every session starting
+SET LINESIZE 200
+SET PAGESIZE 100
+SET LONG 10000
+COLUMN file_name FORMAT A70
+COLUMN tablespace_name FORMAT A20
+```
 
 
 
