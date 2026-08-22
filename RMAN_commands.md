@@ -115,6 +115,82 @@ LIST BACKUP OF DATABASE;
 REPORT NEED BACKUP;
 ```
 
+---
+## Scenario - RMAN recovery
+#### Step 1: verify current datafiles
+```bash
+sqlplus / as sysdba
+```
+```sql
+-- switch connection to PDB
+ALTER SESSION SET CONTAINER = ORCLPDB1;
+SHOW CON_NAME;
+
+SELECT file# , name FROM v$datafile;
+
+-- verify tablespaces + datafiles
+SELECT tablespace_name, status FROM dba_tablespaces;
+
+SELECT file_id, file_name, tablespace_name, bytes/1024/1024 AS MB 
+FROM dba_data_files 
+ORDER BY tablespace_name;
+```
+note the ORCLPDB1 related datafile (Example add_data or users datafile).
+## Step 2: Tablespace offline + datafile delete
+```sql
+ALTER TABLESPACE app_data OFFLINE IMMEDIATE;
+```
+```bash
+rm /u01/oradata/ORCLCDB/ORCLPDB1/app_data01.dbf
+```
+## Step 3: RMAN Restore + Recover
+```bash
+rman target /
+
+RESTORE DATAFILE '/u01/oradata/ORCLCDB/ORCLPDB1/app_data01.dbf';
+RECOVER DATAFILE '/u01/oradata/ORCLCDB/ORCLPDB1/app_data01.dbf';
+```
+## Step 4: Tablespace Online
+```sql
+ALTER TABLESPACE app_data ONLINE;
+```
+## Check tables after recover
+```sql
+CONN app_user/App_123@ORCLPDB1   -- or hr user
+
+SELECT table_name FROM user_tables;
+
+SELECT * FROM test_table;   -- earlier create chesina table
+```
+
+### Datafile missing / corrupt ayite manaki ela telustaadhi?
+Common ways:
+**A. Alert Log**
+```bash
+tail -100 /u01/app/oracle/diag/rdbms/orclcdb/ORCLCDB/trace/alert_ORCLCDB.log
+```
+Error messages (ORA-01157, ORA-01110 etc.)
+**B. Database open avvadam fail avuthundhi**
+```sql
+STARTUP;
+```
+Error vastundhi
+**C. Query tho check cheyyadam**
+```sql
+SELECT file#, name, status FROM v$datafile WHERE status != 'ONLINE';
+SELECT * FROM v$recover_file;
+SELECT * FROM v$recovery_file_status;
+```
+**D. RMAN validation**
+```bash
+RMAN> VALIDATE DATABASE;
+RMAN> VALIDATE DATAFILE <number>;
+```
+**E. Users complaints**
+Application nunchi “unable to extend” or “file not found” errors.
+
+
+
 
 
 
