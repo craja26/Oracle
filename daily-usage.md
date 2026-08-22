@@ -105,6 +105,23 @@ COLUMN file_name FORMAT A70
 COLUMN tablespace_name FORMAT A20
 ```
 
+## Database lo problem detect cheyadam (Daily DBA checks)
+```sql
+# Alert log
+tail -50 alert_ORCLCDB.log
+
+# Instance status
+SELECT status FROM v$instance;
+
+# Datafile status
+SELECT file#, name, status FROM v$datafile;
+
+# Invalid objects
+SELECT object_name, object_type FROM dba_objects WHERE status = 'INVALID';
+
+# Tablespace free space
+SELECT tablespace_name, ROUND(used_percent,2) FROM dba_tablespace_usage_metrics;
+```
 
 
 
