@@ -116,7 +116,7 @@ REPORT NEED BACKUP;
 ```
 
 ---
-## Scenario - RMAN recovery
+# Scenario 1- RMAN recovery
 #### Step 1: verify current datafiles
 ```bash
 sqlplus / as sysdba
@@ -188,6 +188,127 @@ RMAN> VALIDATE DATAFILE <number>;
 ```
 **E. Users complaints**
 Application nunchi “unable to extend” or “file not found” errors.
+---
+
+# Scenario 2- Complete database loss
+Warning: Idhi destructive scenario. Careful ga follow cheyyaali.
+**High-leve steps:**
+1. Current control file + datafiles + redo logs anni list ayyayi ani assume cheddam
+2. RMAN backup undi kabatti recover cheyyochu
+3. Steps:
+  - Startup nomount
+  - Restore control file from autobackup
+  - Mount database
+  - Restore database
+  - Recover database
+  - Open with resetlogs
+---
+
+**Practical start**
+Mundu current environment safe ga vundataaniki Full backup teesukondaam
+```bash
+rman target /
+BACKUP DATABASE PLUS ARCHIVELOG;
+EXIT;
+```
+**Step 1: Database ni shutdown cheyyi**
+```bash
+sqlplus / as sysdba
+SHUTDOWN ABORT;
+EXIT;
+```
+**Step 2: Datafiles + Control files + Redo logs delete cheyyi (loss simulate)**
+```bash
+# Careful ga
+rm -rf /u01/oradata/ORCLCDB/*
+rm -f /u01/app/oracle/product/19c/dbhome_1/dbs/control*
+rm -f /u01/app/oracle/product/19c/dbhome_1/dbs/*.log
+```
+(Fast Recovery Area lo backups undali, touch cheyakudadu)
+**Step 3: RMAN tho Recover**
+```bash
+rman target /
+```
+```bash
+STARTUP NOMOUNT;
+
+RESTORE CONTROLFILE FROM AUTOBACKUP;
+ALTER DATABASE MOUNT;
+
+RESTORE DATABASE;
+RECOVER DATABASE;
+
+ALTER DATABASE OPEN RESETLOGS;
+```
+`RESETLOGS` success ayyaaka - Final steps:
+Connect database server
+```bash
+sqlplus / as sysdba
+```
+```sql
+SELECT status FROM v$instance;
+SHOW PDBS;
+
+ALTER DATABASE OPEN;
+ALTER PLUGGABLE DATABASE ALL OPEN;
+ALTER PLUGGABLE DATABASE ALL SAVE STATE;
+
+SELECT status FROM v$instance;
+SHOW PDBS;
+```
+Output lo:
+
+Instance STATUS = OPEN
+ORCLPDB1 = READ WRITE
+
+kanipisthe Complete Database Loss recovery successful.
+
+---
+**Important Notes:**
+- `OPEN RESETLOGS` tarvata kotha incarnation start avuthundi
+- Tarvata immediate ga kotha full backup theeskovali
+
+**Recover Error**
+Archive log file disk lo miss avvadam valla error vachindhi.
+```text
+RMAN> RECOVER DATABASE;
+
+Starting recover at 23-AUG-26
+using channel ORA_DISK_1
+
+starting media recovery
+
+archived log for thread 1 with sequence 19 is already on disk as file /u01/app/oracle/fast_recovery_area/ORCLCDB/archivelog/2026_08_22/o1_mf_1_19_o8n68lws_.arc
+archived log file name=/u01/app/oracle/fast_recovery_area/ORCLCDB/archivelog/2026_08_22/o1_mf_1_19_o8n68lws_.arc thread=1 sequence=19
+unable to find archived log
+archived log thread=1 sequence=20
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of recover command at 08/23/2026 00:04:43
+RMAN-06054: media recovery requesting unknown archived log for thread 1 with sequence 20 and starting SCN of 2705434
+```
+Andhuke `RECOVER` command lo small change chesi re-run chesa
+```bash
+RECOVER DATABASE UNTIL SEQUENCE 20 THREAD 1;
+# another way
+RUN {
+  SET UNTIL SEQUENCE 20 THREAD 1;
+  RECOVER DATABASE;
+}
+ALTER DATABASE OPEN RESETLOGS;
+```
+`UNTIL SEQUENCE 20 THREAD 1` enduku add chesam.
+- **SEQUENCE 20** → Archive log sequence number 20 mundu varaku recover cheyali ani
+- **THREAD 1** → Single instance lo thread number (normal ga 1)
+Ante: Sequence 19 varaku apply chesi, 20 kosam wait cheyakunda aagipovatam.
+
+
+
+
+
+
+
 
 
 
